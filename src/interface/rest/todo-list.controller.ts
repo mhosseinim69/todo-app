@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Put, Delete, UseGuards, UseFilters } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Delete, UseGuards, UseFilters, Req } from '@nestjs/common';
 import { TodoListService } from '../../application/todo-list/todo-list.service';
 import { CreateTodoListDto } from './dto/create-todo-list.dto';
 import { UpdateTodoListDto } from './dto/update-todo-list.dto';
@@ -12,8 +12,10 @@ export class TodoListController {
 
     @UseGuards(JwtAuthGuard)
     @Post()
-    async create(@Body() createTodoListDto: CreateTodoListDto) {
-        return this.todoListService.createTodoList(createTodoListDto.userId, createTodoListDto.title);
+    async create(@Req() req, @Body() createTodoListDto: CreateTodoListDto) {
+        const userId = req.user.userId;
+        console.log(userId)
+        return this.todoListService.createTodoList(userId, createTodoListDto.title);
     }
 
     @UseGuards(JwtAuthGuard)
