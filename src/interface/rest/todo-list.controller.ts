@@ -14,7 +14,6 @@ export class TodoListController {
     @Post()
     async create(@Req() req, @Body() createTodoListDto: CreateTodoListDto) {
         const userId = req.user.userId;
-        console.log(userId)
         return this.todoListService.createTodoList(userId, createTodoListDto.title);
     }
 
