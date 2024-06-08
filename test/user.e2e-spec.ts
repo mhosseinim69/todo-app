@@ -3,11 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TodoListSchema } from '../src/infrastructure/persistence/mongodb/schemas/todo-list.schema';
 import { UserSchema } from '../src/infrastructure/persistence/mongodb/schemas/user.schema';
 import { JwtAuthGuard } from "../src/application/authentication/auth.guard";
 
-describe('TodoList E2E', () => {
+describe('User E2E', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -15,7 +14,6 @@ describe('TodoList E2E', () => {
       imports: [
         AppModule,
         MongooseModule.forFeature([
-          { name: 'TodoList', schema: TodoListSchema },
           { name: 'User', schema: UserSchema },
         ]),
       ],
@@ -29,41 +27,35 @@ describe('TodoList E2E', () => {
     await app.close();
   });
 
-  it('should get all todo lists', async () => {
+  it('should get all users', async () => {
     return request(app.getHttpServer())
-      .get('/todolists')
+      .get('/users')
       .expect(200)
       .expect((response) => {
         expect(response.body).toBeInstanceOf(Array);
       });
   });
 
-  it('should get a todo list by id', async () => {
-    const createUserResponse = await request(app.getHttpServer())
-      .post('/users/register')
-      .send({ username: Math.random().toString(36).substring(2, 7), password: 'testpassword2' })
-      .expect(201);
+  it('should get a user by id', async () => {
 
-    const userId = createUserResponse.body.user.id;
-
-    const createTodoListDto = {
-      userId,
-      title: 'Another Todo List',
+    const createUserDto = {
+      username: Math.random().toString(36).substring(2, 7),
+      password: 'testpassword2'
     };
 
-    const createTodoListResponse = await request(app.getHttpServer())
-      .post('/todolists')
-      .send(createTodoListDto)
+    const createUserResponse = await request(app.getHttpServer())
+      .post('/users/register')
+      .send(createUserDto)
       .expect(201);
 
-    const todoListId = createTodoListResponse.body._id;
+    const userId = createUserResponse.body.user.id
 
     return request(app.getHttpServer())
-      .get(`/todolists/${todoListId}`)
+      .get(`/users/${userId}`)
       .expect(200)
       .expect((response) => {
-        expect(response.body).toHaveProperty('_id', todoListId);
-        expect(response.body).toHaveProperty('title', 'Another Todo List');
+        expect(response.body).toHaveProperty('id', userId);
+        expect(response.body).toHaveProperty('username', createUserDto.username);
       });
   });
 });
