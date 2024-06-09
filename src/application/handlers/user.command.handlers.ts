@@ -8,18 +8,25 @@ import { User } from '../../domain/user/user.entity';
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
     constructor(
         @Inject('UserRepository') private readonly userRepository: UserRepository,
-        private readonly publisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher,
+    ) { }
 
     async execute(command: CreateUserCommand): Promise<User> {
         const { username, password } = command;
-        const user = this.publisher.mergeObjectContext(new User(null, username, password));
-        user.createUser();
+        const userContext = this.eventPublisher.mergeObjectContext(new User(null, username, password));
+
         try {
-            const createdUser = await this.userRepository.create(user);
-            user.commit();
+            const createdUser = await this.userRepository.create(userContext);
+
+            const userEvent = this.eventPublisher.mergeObjectContext(
+                new User(createdUser.id, username, password),
+            );
+            userEvent.createUser();
+            userEvent.commit();
+
             return createdUser;
         } catch (error) {
-            throw new InternalServerErrorException('An error occurred while creating the user');
+            throw new InternalServerErrorException('Error occurred while creating the user');
         }
     }
 }
