@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler, EventPublisher } from '@nestjs/cqrs';
-import { Inject, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Inject, InternalServerErrorException, NotFoundException, ConflictException } from '@nestjs/common';
 import { UserRepository } from '../../domain/user/user.repository.interface';
 import { CreateUserCommand, UpdateUserCommand, DeleteUserCommand } from '../commands/user.commands';
 import { User } from '../../domain/user/user.entity';
@@ -26,7 +26,11 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
 
             return createdUser;
         } catch (error) {
-            throw new InternalServerErrorException('Error occurred while creating the user');
+            if (error.code === 11000) {
+                throw new ConflictException(`Username '${username}' is already taken`);
+            } else {
+                throw new InternalServerErrorException(error.message);
+            }
         }
     }
 }
@@ -40,6 +44,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
         const { id, updateData } = command;
         try {
             const user = await this.userRepository.findById(id);
+            console.log(user)
             if (!user) {
                 throw new NotFoundException(`User with id ${id} not found`);
             }
@@ -49,7 +54,11 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
             userContext.commit();
             return user;
         } catch (error) {
-            throw new InternalServerErrorException('An error occurred while updating the user');
+            if (error instanceof NotFoundException) {
+                throw error;
+            } else {
+                throw new InternalServerErrorException(error.message);
+            }
         }
     }
 }
@@ -72,7 +81,11 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
             userContext.commit();
             return true;
         } catch (error) {
-            throw new InternalServerErrorException('An error occurred while deleting the user');
+            if (error instanceof NotFoundException) {
+                throw error;
+            } else {
+                throw new InternalServerErrorException(error.message);
+            }
         }
     }
 }

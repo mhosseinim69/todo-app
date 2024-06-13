@@ -4,7 +4,7 @@ import { TodoList } from 'src/domain/todo-list/todo-list.entity';
 
 @Schema()
 export class User extends Document {
-    @Prop()
+    @Prop({ unique: true })
     username: string;
 
     @Prop()
