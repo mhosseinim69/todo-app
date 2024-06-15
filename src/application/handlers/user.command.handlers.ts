@@ -44,7 +44,6 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
         const { id, updateData } = command;
         try {
             const user = await this.userRepository.findById(id);
-            console.log(user)
             if (!user) {
                 throw new NotFoundException(`User with id ${id} not found`);
             }
