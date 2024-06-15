@@ -15,16 +15,10 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
         const { username, password } = command;
         const userContext = this.eventPublisher.mergeObjectContext(new User(null, username, password));
 
+        let createdUser: User;
+
         try {
-            const createdUser = await this.userRepository.create(userContext);
-
-            const userEvent = this.eventPublisher.mergeObjectContext(
-                new User(createdUser.id, username, password),
-            );
-            userEvent.createUser();
-            userEvent.commit();
-
-            return createdUser;
+            createdUser = await this.userRepository.create(userContext);
         } catch (error) {
             if (error.code === 11000) {
                 throw new ConflictException(`Username '${username}' is already taken`);
@@ -32,6 +26,14 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
                 throw new InternalServerErrorException(error.message);
             }
         }
+
+        const userEvent = this.eventPublisher.mergeObjectContext(
+            new User(createdUser.id, username, password),
+        );
+        userEvent.createUser();
+        userEvent.commit();
+
+        return createdUser;
     }
 }
 
@@ -42,16 +44,15 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
     async execute(command: UpdateUserCommand): Promise<User | null> {
         const { id, updateData } = command;
+
+        let user: User | null;
+
         try {
-            const user = await this.userRepository.findById(id);
+            user = await this.userRepository.findById(id);
             if (!user) {
                 throw new NotFoundException(`User with id ${id} not found`);
             }
-            const userContext = this.publisher.mergeObjectContext(user);
-            userContext.updateUser(updateData);
-            await this.userRepository.update(id, userContext);
-            userContext.commit();
-            return user;
+            await this.userRepository.update(id, updateData);
         } catch (error) {
             if (error instanceof NotFoundException) {
                 throw error;
@@ -59,6 +60,12 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
                 throw new InternalServerErrorException(error.message);
             }
         }
+
+        const userContext = this.publisher.mergeObjectContext(user);
+        userContext.updateUser(updateData);
+        userContext.commit();
+
+        return user;
     }
 }
 
@@ -69,16 +76,15 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
 
     async execute(command: DeleteUserCommand): Promise<boolean> {
         const { id } = command;
+
+        let user: User | null;
+
         try {
-            const user = await this.userRepository.findById(id);
+            user = await this.userRepository.findById(id);
             if (!user) {
                 throw new NotFoundException(`User with id ${id} not found`);
             }
-            const userContext = this.publisher.mergeObjectContext(user);
-            userContext.deleteUser();
             await this.userRepository.delete(id);
-            userContext.commit();
-            return true;
         } catch (error) {
             if (error instanceof NotFoundException) {
                 throw error;
@@ -86,5 +92,11 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
                 throw new InternalServerErrorException(error.message);
             }
         }
+
+        const userContext = this.publisher.mergeObjectContext(user);
+        userContext.deleteUser();
+        userContext.commit();
+
+        return true;
     }
 }
