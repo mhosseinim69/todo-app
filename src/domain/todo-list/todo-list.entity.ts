@@ -15,7 +15,7 @@ export class TodoList extends AggregateRoot implements ITodoList {
     constructor(
         public readonly _id: string,
         public readonly userId: string,
-        public readonly title: string,
+        public title: string,
         public todoItems: TodoItem[] = [],
         public createdAt?: Date,
         public updatedAt?: Date
@@ -27,7 +27,8 @@ export class TodoList extends AggregateRoot implements ITodoList {
         this.apply(new TodoListCreatedEvent(this._id, this.userId));
     }
 
-    updateTodoList() {
+    updateTodoList(updateData: Partial<TodoList>) {
+        if (updateData.title) this.title = updateData.title;
         this.apply(new TodoListUpdatedEvent(this._id));
     }
 

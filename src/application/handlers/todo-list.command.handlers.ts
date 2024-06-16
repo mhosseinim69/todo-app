@@ -4,39 +4,48 @@ import { TodoListRepository } from '../../domain/todo-list/todo-list.repository.
 import { CreateTodoListCommand, UpdateTodoListCommand, DeleteTodoListCommand } from '../commands/todo-list.commands';
 import { TodoList } from '../../domain/todo-list/todo-list.entity';
 import { UserRepository } from '../../domain/user/user.repository.interface';
+import { User } from 'src/domain/user/user.entity';
 
 @CommandHandler(CreateTodoListCommand)
 export class CreateTodoListHandler implements ICommandHandler<CreateTodoListCommand> {
     constructor(
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
         @Inject('UserRepository') private readonly userRepository: UserRepository,
-        private readonly publisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher) { }
 
     async execute(command: CreateTodoListCommand): Promise<TodoList> {
         const { userId, title } = command;
 
-        const todoList = new TodoList(null, userId, title);
-        const todoListContext = this.publisher.mergeObjectContext(todoList);
-        todoListContext.createTodoList();
+        const todoListContext = this.eventPublisher.mergeObjectContext(new TodoList(null, userId, title));
+
+        let createdTodoList: TodoList;
 
         try {
-            const createdTodoList = await this.todoListRepository.create(todoListContext);
-            todoListContext.commit();
-
-            const user = await this.userRepository.findById(userId);
-            if (!user) {
-                throw new NotFoundException(`User with id ${userId} not found`);
-            }
-            const userContext = this.publisher.mergeObjectContext(user);
-            userContext.addTodoList(createdTodoList);
-            await this.userRepository.update(userId, userContext);
-            userContext.commit();
-
-            return createdTodoList;
+            createdTodoList = await this.todoListRepository.create(todoListContext);
         } catch (error) {
-            throw new InternalServerErrorException('An error occurred while updating the todo list');
+            throw new InternalServerErrorException(error.message);
         }
 
+        const todoListEvent = this.eventPublisher.mergeObjectContext(
+            new TodoList(createdTodoList._id, userId, title),
+        );
+        todoListEvent.createTodoList();
+        todoListEvent.commit();
+
+        let user: User;
+
+        try {
+            user = await this.userRepository.findById(userId);;
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        }
+
+        const userContext = this.eventPublisher.mergeObjectContext(user);
+        userContext.addTodoList(createdTodoList);
+        await this.userRepository.update(userId, userContext);
+        userContext.commit();
+
+        return createdTodoList;
     }
 }
 
@@ -44,24 +53,32 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
 export class UpdateTodoListHandler implements ICommandHandler<UpdateTodoListCommand> {
     constructor(
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
-        private readonly publisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher) { }
 
     async execute(command: UpdateTodoListCommand): Promise<TodoList | null> {
         const { id, updateData } = command;
+
+        let todoList: TodoList | null;
+
         try {
-            const todoList = await this.todoListRepository.findById(id);
-            if (todoList) {
-                Object.assign(todoList, updateData);
-                todoList.updateTodoList();
-                await this.todoListRepository.update(id, todoList);
-                todoList.commit();
-                return todoList;
-            } else {
+            todoList = await this.todoListRepository.findById(id);
+            if (!todoList) {
                 throw new NotFoundException(`TodoList with id ${id} not found`);
             }
+            await this.todoListRepository.update(id, updateData);
         } catch (error) {
-            throw new InternalServerErrorException('An error occurred while updating the todo list');
+            if (error instanceof NotFoundException) {
+                throw error;
+            } else {
+                throw new InternalServerErrorException(error.message);
+            }
         }
+
+        const todoListContext = this.eventPublisher.mergeObjectContext(todoList);
+        todoListContext.updateTodoList(updateData);
+        todoListContext.commit();
+
+        return todoList
     }
 }
 
@@ -69,23 +86,31 @@ export class UpdateTodoListHandler implements ICommandHandler<UpdateTodoListComm
 export class DeleteTodoListHandler implements ICommandHandler<DeleteTodoListCommand> {
     constructor(
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
-        private readonly publisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher) { }
 
     async execute(command: DeleteTodoListCommand): Promise<boolean> {
         const { id } = command;
+
+        let todoList: TodoList | null;
+
         try {
-            const todoList = await this.todoListRepository.findById(id);
-            if (todoList) {
-                const todoListContext = this.publisher.mergeObjectContext(todoList);
-                todoListContext.deleteTodoList();
-                await this.todoListRepository.delete(id);
-                todoListContext.commit();
-                return true;
-            } else {
+            todoList = await this.todoListRepository.findById(id);
+            if (!todoList) {
                 throw new NotFoundException(`TodoList with id ${id} not found`);
             }
+            await this.todoListRepository.delete(id);
         } catch (error) {
-            throw new InternalServerErrorException('An error occurred while deleting the todo list');
+            if (error instanceof NotFoundException) {
+                throw error;
+            } else {
+                throw new InternalServerErrorException(error.message);
+            }
         }
+
+        const todoListContext = this.eventPublisher.mergeObjectContext(todoList);
+        todoListContext.deleteTodoList();
+        todoListContext.commit();
+
+        return true;
     }
 }
