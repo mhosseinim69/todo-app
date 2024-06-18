@@ -42,7 +42,12 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
 
         const userContext = this.eventPublisher.mergeObjectContext(user);
         userContext.addTodoList(createdTodoList);
-        await this.userRepository.update(userId, userContext);
+        try {
+            await this.userRepository.update(userId, userContext);
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        }
+
         userContext.commit();
 
         return createdTodoList;

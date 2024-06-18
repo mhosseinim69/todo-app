@@ -38,6 +38,7 @@ export class TodoList extends AggregateRoot implements ITodoList {
 
     addTodoItem(todoItem: TodoItem) {
         this.todoItems.push(todoItem);
+        this.apply(new TodoListUpdatedEvent(this._id));
     }
 
     removeTodoItem(todoItemId: string) {
