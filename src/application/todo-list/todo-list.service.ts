@@ -27,7 +27,7 @@ export class TodoListService {
     }
 
     async deleteTodoList(id: string): Promise<string> {
-        const result = this.commandBus.execute(new DeleteTodoListCommand(id));
+        const result = await this.commandBus.execute(new DeleteTodoListCommand(id));
         return result ? 'TodoList deleted successfully' : 'TodoList not found';
     }
 }

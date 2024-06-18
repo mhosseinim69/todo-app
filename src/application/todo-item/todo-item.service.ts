@@ -28,7 +28,7 @@ export class TodoItemService {
     }
 
     async deleteTodoItem(id: string): Promise<string> {
-        const result = this.commandBus.execute(new DeleteTodoItemCommand(id));
+        const result = await this.commandBus.execute(new DeleteTodoItemCommand(id));
         return result ? 'TodoItem deleted successfully' : 'TodoItem not found';
     }
 }
