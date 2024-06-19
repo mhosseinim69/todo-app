@@ -12,6 +12,7 @@ import { AuthService } from '../../application/authentication/auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtConfigService } from '../../application/authentication/jwt-config.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @Module({
     imports: [
@@ -33,7 +34,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         AuthService,
         JwtService,
         JwtConfigService,
-        ConfigService
+        ConfigService,
+        WinstonLogger
     ],
     exports: [UserService,
         { provide: 'UserRepository', useClass: MongoUserRepository }],

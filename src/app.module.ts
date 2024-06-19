@@ -12,6 +12,7 @@ import { AuthModule } from './modules/authentication/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtConfigService } from './application/authentication/jwt-config.service';
+import { WinstonLogger } from './application/logger/winston-logger.service';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { JwtConfigService } from './application/authentication/jwt-config.servic
       inject: [ConfigService],
     }),
   ],
-  providers: [UserSagas, TodoListSagas, TodoItemSagas, JwtConfigService],
+  providers: [UserSagas, TodoListSagas, TodoItemSagas, JwtConfigService, WinstonLogger],
   exports: [JwtConfigService],
 })
 export class AppModule { }

@@ -1,17 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, LoggerService } from '@nestjs/common';
 import { Saga, ofType } from '@nestjs/cqrs';
 import { Observable } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { UserCreatedEvent, UserUpdatedEvent, UserDeletedEvent } from '../../domain/events/user-events';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @Injectable()
 export class UserSagas {
+    constructor(private readonly logger: WinstonLogger) { }
+
     @Saga()
     userCreated = (events$: Observable<any>): Observable<void> => {
         return events$.pipe(
             ofType(UserCreatedEvent),
             delay(1000),
             map(event => {
+                this.logger.log('User created event received');
                 console.log(`User created: ${event.userId}, ${event.username}`);
             }),
         );
