@@ -67,9 +67,6 @@ export class UpdateTodoListHandler implements ICommandHandler<UpdateTodoListComm
 
         try {
             todoList = await this.todoListRepository.findById(id);
-            if (!todoList) {
-                throw new NotFoundException(`TodoList with id ${id} not found`);
-            }
             await this.todoListRepository.update(id, updateData);
         } catch (error) {
             if (error instanceof NotFoundException) {
@@ -100,9 +97,6 @@ export class DeleteTodoListHandler implements ICommandHandler<DeleteTodoListComm
 
         try {
             todoList = await this.todoListRepository.findById(id);
-            if (!todoList) {
-                throw new NotFoundException(`TodoList with id ${id} not found`);
-            }
             await this.todoListRepository.delete(id);
         } catch (error) {
             if (error instanceof NotFoundException) {

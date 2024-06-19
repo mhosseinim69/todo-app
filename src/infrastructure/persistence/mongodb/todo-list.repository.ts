@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TodoListRepository } from 'src/domain/todo-list/todo-list.repository.interface';
@@ -12,7 +12,10 @@ export class MongoTodoListRepository implements TodoListRepository {
 
     async findById(id: string): Promise<TodoList | null> {
         const todoListDocument = await this.todoListModel.findById(id).populate('todoItems').exec();
-        return todoListDocument ? TodoListMapper.toDomain(todoListDocument) : null;
+        if (!todoListDocument) {
+            throw new NotFoundException(`TodoList with id ${id} not found`);
+        }
+        return TodoListMapper.toDomain(todoListDocument);
     }
 
     async findAll(): Promise<TodoList[]> {

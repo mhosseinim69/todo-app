@@ -49,9 +49,6 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
         try {
             user = await this.userRepository.findById(id);
-            if (!user) {
-                throw new NotFoundException(`User with id ${id} not found`);
-            }
             await this.userRepository.update(id, updateData);
         } catch (error) {
             if (error instanceof NotFoundException) {
@@ -81,9 +78,6 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
 
         try {
             user = await this.userRepository.findById(id);
-            if (!user) {
-                throw new NotFoundException(`User with id ${id} not found`);
-            }
             await this.userRepository.delete(id);
         } catch (error) {
             if (error instanceof NotFoundException) {

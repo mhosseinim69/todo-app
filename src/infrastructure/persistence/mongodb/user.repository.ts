@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserRepository } from 'src/domain/user/user.repository.interface';
@@ -12,7 +12,10 @@ export class MongoUserRepository implements UserRepository {
 
     async findById(id: string): Promise<DomainUser | null> {
         const userDocument = await this.userModel.findById(id).populate('todoLists').exec();
-        return userDocument ? UserMapper.toDomain(userDocument) : null;
+        if (!userDocument) {
+            throw new NotFoundException(`User with id ${id} not found`);
+        }
+        return UserMapper.toDomain(userDocument);
     }
 
     async findOne(username: string): Promise<DomainUser | null> {
