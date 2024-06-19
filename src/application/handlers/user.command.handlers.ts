@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler, EventPublisher } from '@nestjs/cqrs';
-import { Inject, InternalServerErrorException, NotFoundException, ConflictException } from '@nestjs/common';
+import { Inject, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { UserRepository } from '../../domain/user/user.repository.interface';
 import { CreateUserCommand, UpdateUserCommand, DeleteUserCommand } from '../commands/user.commands';
 import { User } from '../../domain/user/user.entity';
@@ -23,7 +23,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
             if (error.code === 11000) {
                 throw new ConflictException(`Username '${username}' is already taken`);
             } else {
-                throw new InternalServerErrorException(error.message);
+                throw new BadRequestException(error.message);
             }
         }
 
@@ -57,7 +57,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
             if (error instanceof NotFoundException) {
                 throw error;
             } else {
-                throw new InternalServerErrorException(error.message);
+                throw new BadRequestException(error.message);
             }
         }
 
@@ -89,7 +89,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
             if (error instanceof NotFoundException) {
                 throw error;
             } else {
-                throw new InternalServerErrorException(error.message);
+                throw new BadRequestException(error.message);
             }
         }
 

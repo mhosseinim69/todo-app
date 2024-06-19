@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler, EventPublisher } from '@nestjs/cqrs';
-import { Inject, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { TodoItemRepository } from '../../domain/todo-item/todo-item.repository.interface';
 import { CreateTodoItemCommand, UpdateTodoItemCommand, DeleteTodoItemCommand } from '../commands/todo-item.commands';
 import { TodoItem } from '../../domain/todo-item/todo-item.entity';
@@ -27,7 +27,7 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
             if (error instanceof NotFoundException) {
                 throw error;
             } else {
-                throw new InternalServerErrorException(error.message);
+                throw new BadRequestException(error.message);
             }
         }
 
@@ -39,7 +39,7 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
         try {
             createdTodoItem = await this.todoItemRepository.create(todoItemContext);
         } catch (error) {
-            throw new InternalServerErrorException(error.message);
+            throw new BadRequestException(error.message);
         }
 
         const todoItemEventPublisher = new TodoItem(createdTodoItem._id, todoListId, title, description, priority);
@@ -52,7 +52,7 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
         try {
             await this.todoListRepository.update(todoListId, todoListContext);
         } catch (error) {
-            throw new InternalServerErrorException(error.message);
+            throw new BadRequestException(error.message);
         }
 
         todoListContext.commit();
@@ -82,7 +82,7 @@ export class UpdateTodoItemHandler implements ICommandHandler<UpdateTodoItemComm
             if (error instanceof NotFoundException) {
                 throw error;
             } else {
-                throw new InternalServerErrorException(error.message);
+                throw new BadRequestException(error.message);
             }
         }
 
@@ -116,7 +116,7 @@ export class DeleteTodoItemHandler implements ICommandHandler<DeleteTodoItemComm
             if (error instanceof NotFoundException) {
                 throw error;
             } else {
-                throw new InternalServerErrorException(error.message);
+                throw new BadRequestException(error.message);
             }
         }
 
@@ -135,7 +135,7 @@ export class DeleteTodoItemHandler implements ICommandHandler<DeleteTodoItemComm
             if (error instanceof NotFoundException) {
                 throw error;
             } else {
-                throw new InternalServerErrorException(error.message);
+                throw new BadRequestException(error.message);
             }
         }
         todoList.todoItems = todoList.todoItems.filter(item => item._id !== id);
