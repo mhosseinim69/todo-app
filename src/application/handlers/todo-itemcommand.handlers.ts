@@ -33,12 +33,11 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
         }
 
         const todoItem = new TodoItem(null, todoListId, title, description, priority);
-        const todoItemContext = this.eventPublisher.mergeObjectContext(todoItem);
 
         let createdTodoItem: TodoItem;
 
         try {
-            createdTodoItem = await this.todoItemRepository.create(todoItemContext);
+            createdTodoItem = await this.todoItemRepository.create(todoItem);
         } catch (error) {
             this.logger.error(`Failed to create todoitem: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);

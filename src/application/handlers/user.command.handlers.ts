@@ -15,12 +15,11 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
 
     async execute(command: CreateUserCommand): Promise<User> {
         const { username, password } = command;
-        const userContext = this.eventPublisher.mergeObjectContext(new User(null, username, password));
 
         let createdUser: User;
 
         try {
-            createdUser = await this.userRepository.create(userContext);
+            createdUser = await this.userRepository.create(new User(null, username, password));
         } catch (error) {
             if (error.code === 11000) {
                 this.logger.error(`Username '${username}' is already taken`, error.stack);

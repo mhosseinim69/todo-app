@@ -18,12 +18,10 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
     async execute(command: CreateTodoListCommand): Promise<TodoList> {
         const { userId, title } = command;
 
-        const todoListContext = this.eventPublisher.mergeObjectContext(new TodoList(null, userId, title));
-
         let createdTodoList: TodoList;
 
         try {
-            createdTodoList = await this.todoListRepository.create(todoListContext);
+            createdTodoList = await this.todoListRepository.create(new TodoList(null, userId, title));
         } catch (error) {
             this.logger.error(`Failed to create todolist: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
