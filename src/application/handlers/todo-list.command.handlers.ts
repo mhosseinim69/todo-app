@@ -49,7 +49,7 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
         try {
             await this.userRepository.update(userId, userContext);
         } catch (error) {
-            this.logger.error(`Error occurred: ${error.message}`, error.stack);
+            this.logger.error(`Error updating user with ID ${userId}: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 
