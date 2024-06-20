@@ -5,13 +5,15 @@ import { CreateTodoListCommand, UpdateTodoListCommand, DeleteTodoListCommand } f
 import { TodoList } from '../../domain/todo-list/todo-list.entity';
 import { UserRepository } from '../../domain/user/user.repository.interface';
 import { User } from 'src/domain/user/user.entity';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @CommandHandler(CreateTodoListCommand)
 export class CreateTodoListHandler implements ICommandHandler<CreateTodoListCommand> {
     constructor(
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
         @Inject('UserRepository') private readonly userRepository: UserRepository,
-        private readonly eventPublisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher,
+        private readonly logger: WinstonLogger) { }
 
     async execute(command: CreateTodoListCommand): Promise<TodoList> {
         const { userId, title } = command;
@@ -23,6 +25,7 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
         try {
             createdTodoList = await this.todoListRepository.create(todoListContext);
         } catch (error) {
+            this.logger.error(`Error occurred: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 
@@ -37,6 +40,7 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
         try {
             user = await this.userRepository.findById(userId);;
         } catch (error) {
+            this.logger.error(`Error occurred: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 
@@ -45,6 +49,7 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
         try {
             await this.userRepository.update(userId, userContext);
         } catch (error) {
+            this.logger.error(`Error occurred: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 
@@ -58,7 +63,8 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
 export class UpdateTodoListHandler implements ICommandHandler<UpdateTodoListCommand> {
     constructor(
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
-        private readonly eventPublisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher,
+        private readonly logger: WinstonLogger) { }
 
     async execute(command: UpdateTodoListCommand): Promise<TodoList | null> {
         const { id, updateData } = command;
@@ -70,8 +76,10 @@ export class UpdateTodoListHandler implements ICommandHandler<UpdateTodoListComm
             await this.todoListRepository.update(id, updateData);
         } catch (error) {
             if (error instanceof NotFoundException) {
+                this.logger.error(`TodoList with ID ${id} not found`, error.stack);
                 throw error;
             } else {
+                this.logger.error(`Error updating todolist with ID ${id}: ${error.message}`, error.stack);
                 throw new BadRequestException(error.message);
             }
         }
@@ -88,7 +96,8 @@ export class UpdateTodoListHandler implements ICommandHandler<UpdateTodoListComm
 export class DeleteTodoListHandler implements ICommandHandler<DeleteTodoListCommand> {
     constructor(
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
-        private readonly eventPublisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher,
+        private readonly logger: WinstonLogger) { }
 
     async execute(command: DeleteTodoListCommand): Promise<boolean> {
         const { id } = command;
@@ -100,8 +109,10 @@ export class DeleteTodoListHandler implements ICommandHandler<DeleteTodoListComm
             await this.todoListRepository.delete(id);
         } catch (error) {
             if (error instanceof NotFoundException) {
+                this.logger.error(`TodoList with ID ${id} not found`, error.stack);
                 throw error;
             } else {
+                this.logger.error(`Error deleting todolist with ID ${id}: ${error.message}`, error.stack);
                 throw new BadRequestException(error.message);
             }
         }

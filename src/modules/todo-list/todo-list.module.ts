@@ -9,6 +9,7 @@ import { CreateTodoListHandler, UpdateTodoListHandler, DeleteTodoListHandler } f
 import { GetTodoListByIdHandler, GetAllTodoListsHandler } from '../../application/handlers/todo-list.query.handlers';
 import { TodoListSagas } from '../../application/sagas/todo-list.saga';
 import { UserModule } from '../user/user.module';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { UserModule } from '../user/user.module';
         GetAllTodoListsHandler,
         TodoListSagas,
         { provide: 'TodoListRepository', useClass: MongoTodoListRepository },
+        WinstonLogger
     ],
     controllers: [TodoListController],
 })
