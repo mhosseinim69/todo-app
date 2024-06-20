@@ -5,13 +5,15 @@ import { CreateTodoItemCommand, UpdateTodoItemCommand, DeleteTodoItemCommand } f
 import { TodoItem } from '../../domain/todo-item/todo-item.entity';
 import { TodoListRepository } from '../../domain/todo-list/todo-list.repository.interface';
 import { TodoList } from 'src/domain/todo-list/todo-list.entity';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @CommandHandler(CreateTodoItemCommand)
 export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemCommand> {
     constructor(
         @Inject('TodoItemRepository') private readonly todoItemRepository: TodoItemRepository,
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
-        private readonly eventPublisher: EventPublisher,) { }
+        private readonly eventPublisher: EventPublisher,
+        private readonly logger: WinstonLogger) { }
 
     async execute(command: CreateTodoItemCommand): Promise<TodoItem> {
         const { todoListId, title, description, priority } = command;
@@ -22,8 +24,10 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
             todoList = await this.todoListRepository.findById(todoListId);
         } catch (error) {
             if (error instanceof NotFoundException) {
+                this.logger.error(`TodoList with ID ${todoListId} not found`, error.stack);
                 throw error;
             } else {
+                this.logger.error(`Error occurred: ${error.message}`, error.stack);
                 throw new BadRequestException(error.message);
             }
         }
@@ -36,6 +40,7 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
         try {
             createdTodoItem = await this.todoItemRepository.create(todoItemContext);
         } catch (error) {
+            this.logger.error(`Error occurred: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 
@@ -49,6 +54,7 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
         try {
             await this.todoListRepository.update(todoListId, todoListContext);
         } catch (error) {
+            this.logger.error(`Error updating todolist with ID ${todoListId}: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 
@@ -62,7 +68,8 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
 export class UpdateTodoItemHandler implements ICommandHandler<UpdateTodoItemCommand> {
     constructor(
         @Inject('TodoItemRepository') private readonly todoItemRepository: TodoItemRepository,
-        private readonly eventPublisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher,
+        private readonly logger: WinstonLogger) { }
 
     async execute(command: UpdateTodoItemCommand): Promise<TodoItem | null> {
         const { id, updateData } = command;
@@ -74,8 +81,10 @@ export class UpdateTodoItemHandler implements ICommandHandler<UpdateTodoItemComm
             await this.todoItemRepository.update(id, updateData);
         } catch (error) {
             if (error instanceof NotFoundException) {
+                this.logger.error(`TodoItem with ID ${id} not found`, error.stack);
                 throw error;
             } else {
+                this.logger.error(`Error updating todoItem with ID ${id}: ${error.message}`, error.stack);
                 throw new BadRequestException(error.message);
             }
         }
@@ -93,7 +102,8 @@ export class DeleteTodoItemHandler implements ICommandHandler<DeleteTodoItemComm
     constructor(
         @Inject('TodoItemRepository') private readonly todoItemRepository: TodoItemRepository,
         @Inject('TodoListRepository') private readonly todoListRepository: TodoListRepository,
-        private readonly eventPublisher: EventPublisher) { }
+        private readonly eventPublisher: EventPublisher,
+        private readonly logger: WinstonLogger) { }
 
     async execute(command: DeleteTodoItemCommand): Promise<boolean> {
         const { id } = command;
@@ -105,8 +115,10 @@ export class DeleteTodoItemHandler implements ICommandHandler<DeleteTodoItemComm
             await this.todoItemRepository.delete(id);
         } catch (error) {
             if (error instanceof NotFoundException) {
+                this.logger.error(`TodoItem with ID ${id} not found`, error.stack);
                 throw error;
             } else {
+                this.logger.error(`Error deleting todoItem with ID ${id}: ${error.message}`, error.stack);
                 throw new BadRequestException(error.message);
             }
         }
@@ -121,8 +133,10 @@ export class DeleteTodoItemHandler implements ICommandHandler<DeleteTodoItemComm
             todoList = await this.todoListRepository.findById(todoItem.todoListId);
         } catch (error) {
             if (error instanceof NotFoundException) {
+                this.logger.error(`TodoList with ID ${todoItem.todoListId} not found`, error.stack);
                 throw error;
             } else {
+                this.logger.error(`Error occurred: ${error.message}`, error.stack);
                 throw new BadRequestException(error.message);
             }
         }

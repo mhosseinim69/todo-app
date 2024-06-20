@@ -10,6 +10,7 @@ import { GetTodoItemByIdHandler, GetAllTodoItemsHandler } from '../../applicatio
 import { TodoItemSagas } from '../../application/sagas/todo-item.saga';
 import { TodoListSchema } from '../../infrastructure/persistence/mongodb/schemas/todo-list.schema';
 import { MongoTodoListRepository } from '../../infrastructure/persistence/mongodb/todo-list.repository';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { MongoTodoListRepository } from '../../infrastructure/persistence/mongod
         TodoItemSagas,
         { provide: 'TodoItemRepository', useClass: MongoTodoItemRepository },
         { provide: 'TodoListRepository', useClass: MongoTodoListRepository },
+        WinstonLogger
     ],
     controllers: [TodoItemController],
 })
