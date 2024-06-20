@@ -3,16 +3,19 @@ import { Saga, ofType } from '@nestjs/cqrs';
 import { Observable } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { TodoListCreatedEvent, TodoListUpdatedEvent, TodoListDeletedEvent } from '../../domain/events/todo-list-events';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @Injectable()
 export class TodoListSagas {
+    constructor(private readonly logger: WinstonLogger) { }
+
     @Saga()
     todoListCreated = (events$: Observable<any>): Observable<void> => {
         return events$.pipe(
             ofType(TodoListCreatedEvent),
             delay(1000),
             map(event => {
-                console.log(`Todo list created: ${event.todoListId}, ${event.userId}`);
+                this.logger.log(`Todo list created: ${event.todoListId}, ${event.userId}`);
             }),
         );
     };
@@ -23,7 +26,7 @@ export class TodoListSagas {
             ofType(TodoListUpdatedEvent),
             delay(1000),
             map(event => {
-                console.log(`Todo list updated: ${event.todoListId}`);
+                this.logger.log(`Todo list updated: ${event.todoListId}`);
             }),
         );
     };
@@ -34,7 +37,7 @@ export class TodoListSagas {
             ofType(TodoListDeletedEvent),
             delay(1000),
             map(event => {
-                console.log(`Todo list deleted: ${event.todoListId}`);
+                this.logger.log(`Todo list deleted: ${event.todoListId}`);
             }),
         );
     };
