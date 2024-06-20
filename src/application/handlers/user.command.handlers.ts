@@ -26,7 +26,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
                 this.logger.error(`Username '${username}' is already taken`, error.stack);
                 throw new ConflictException(`Username '${username}' is already taken`);
             } else {
-                this.logger.error(`Error occurred: ${error.message}`, error.stack);
+                this.logger.error(`Failed to create user: ${error.message}`, error.stack);
                 throw new BadRequestException(error.message);
             }
         }

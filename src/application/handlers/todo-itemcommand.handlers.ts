@@ -40,7 +40,7 @@ export class CreateTodoItemHandler implements ICommandHandler<CreateTodoItemComm
         try {
             createdTodoItem = await this.todoItemRepository.create(todoItemContext);
         } catch (error) {
-            this.logger.error(`Error occurred: ${error.message}`, error.stack);
+            this.logger.error(`Failed to create todoitem: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 

@@ -25,7 +25,7 @@ export class CreateTodoListHandler implements ICommandHandler<CreateTodoListComm
         try {
             createdTodoList = await this.todoListRepository.create(todoListContext);
         } catch (error) {
-            this.logger.error(`Error occurred: ${error.message}`, error.stack);
+            this.logger.error(`Failed to create todolist: ${error.message}`, error.stack);
             throw new BadRequestException(error.message);
         }
 
