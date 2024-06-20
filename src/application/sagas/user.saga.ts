@@ -1,4 +1,4 @@
-import { Injectable, Inject, LoggerService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Saga, ofType } from '@nestjs/cqrs';
 import { Observable } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
@@ -15,8 +15,7 @@ export class UserSagas {
             ofType(UserCreatedEvent),
             delay(1000),
             map(event => {
-                this.logger.log('User created event received');
-                console.log(`User created: ${event.userId}, ${event.username}`);
+                this.logger.log(`User created: ${event.userId}, ${event.username}`);
             }),
         );
     };
@@ -27,7 +26,7 @@ export class UserSagas {
             ofType(UserUpdatedEvent),
             delay(1000),
             map(event => {
-                console.log(`User updated: ${event.userId}`);
+                this.logger.log(`User updated: ${event.userId}`);
             }),
         );
     };
@@ -38,7 +37,7 @@ export class UserSagas {
             ofType(UserDeletedEvent),
             delay(1000),
             map(event => {
-                console.log(`User deleted: ${event.userId}`);
+                this.logger.log(`User deleted: ${event.userId}`);
             }),
         );
     };
