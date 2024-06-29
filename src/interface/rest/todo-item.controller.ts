@@ -6,6 +6,7 @@ import { HttpExceptionFilter } from '../../application/filters/http-exception.fi
 import { JwtAuthGuard } from '../../application/authentication/auth.guard';
 
 @Controller('todoitems')
+@UseGuards(JwtAuthGuard)
 @UseFilters(HttpExceptionFilter)
 export class TodoItemController {
     constructor(private readonly todoItemService: TodoItemService) { }
@@ -21,25 +22,21 @@ export class TodoItemController {
         );
     }
 
-    @UseGuards(JwtAuthGuard)
     @Get(':id')
     async findById(@Param('id') id: string) {
         return this.todoItemService.getTodoItemById(id);
     }
 
-    @UseGuards(JwtAuthGuard)
     @Get()
     async findAll() {
         return this.todoItemService.getAllTodoItems();
     }
 
-    @UseGuards(JwtAuthGuard)
     @Put(':id')
     async update(@Param('id') id: string, @Body() updateTodoItemDto: UpdateTodoItemDto) {
         return this.todoItemService.updateTodoItem(id, updateTodoItemDto);
     }
 
-    @UseGuards(JwtAuthGuard)
     @Delete(':id')
     async remove(@Param('id') id: string) {
         return this.todoItemService.deleteTodoItem(id);
