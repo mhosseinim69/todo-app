@@ -1,32 +1,54 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
+import { Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { UserRepository } from '../../domain/user/user.repository.interface';
-import { GetUserByIdQuery, GetUserByUserNameQuery, GetAllUsersQuery } from '../queries/user.queries';
+import { GetUserByIdQuery, GetAllUsersQuery } from '../queries/user.queries';
 import { User } from '../../domain/user/user.entity';
+import { WinstonLogger } from '../../application/logger/winston-logger.service';
 
 @QueryHandler(GetUserByIdQuery)
 export class GetUserByIdHandler implements IQueryHandler<GetUserByIdQuery> {
-    constructor(@Inject('UserRepository') private readonly userRepository: UserRepository) { }
+    constructor(
+        @Inject('UserRepository') private readonly userRepository: UserRepository,
+        private readonly logger: WinstonLogger) { }
 
     async execute(query: GetUserByIdQuery): Promise<User | null> {
-        return this.userRepository.findById(query.id);
+
+        let user: User | null;
+
+        try {
+            user = await this.userRepository.findById(query.id);
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                this.logger.error(`User with ID ${query.id} not found`, error.stack);
+                throw error;
+            } else {
+                this.logger.error(`Error getting user with ID ${query.id}: ${error.message}`, error.stack);
+                throw new BadRequestException(error.message);
+            }
+        }
+
+        return user
     }
 }
 
-@QueryHandler(GetUserByUserNameQuery)
-export class GetUserByUserNameHandler implements IQueryHandler<GetUserByUserNameQuery> {
-    constructor(@Inject('UserRepository') private readonly userRepository: UserRepository) { }
-
-    async execute(query: GetUserByUserNameQuery): Promise<User | null> {
-        return this.userRepository.findOne(query.username);
-    }
-}
 
 @QueryHandler(GetAllUsersQuery)
 export class GetAllUsersHandler implements IQueryHandler<GetAllUsersQuery> {
-    constructor(@Inject('UserRepository') private readonly userRepository: UserRepository) { }
+    constructor(
+        @Inject('UserRepository') private readonly userRepository: UserRepository,
+        private readonly logger: WinstonLogger) { }
 
     async execute(): Promise<User[]> {
-        return this.userRepository.findAll();
+
+        let users: User[];
+
+        try {
+            users = await this.userRepository.findAll();
+        } catch (error) {
+            this.logger.error(`Error getting users ${error.message}`, error.stack);
+            throw new BadRequestException(error.message);
+        }
+
+        return users
     }
 }

@@ -6,7 +6,7 @@ import { MongoUserRepository } from '../../infrastructure/persistence/mongodb/us
 import { User, UserSchema } from '../../infrastructure/persistence/mongodb/schemas/user.schema';
 import { UserController } from '../../interface/rest/user.controller';
 import { CreateUserHandler, UpdateUserHandler, DeleteUserHandler } from '../../application/handlers/user.command.handlers';
-import { GetUserByIdHandler, GetUserByUserNameHandler, GetAllUsersHandler } from '../../application/handlers/user.query.handlers';
+import { GetUserByIdHandler, GetAllUsersHandler } from '../../application/handlers/user.query.handlers';
 import { UserSagas } from '../../application/sagas/user.saga';
 import { AuthService } from '../../application/authentication/auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -28,7 +28,6 @@ import { WinstonLogger } from '../../application/logger/winston-logger.service';
         UpdateUserHandler,
         DeleteUserHandler,
         GetUserByIdHandler,
-        GetUserByUserNameHandler,
         GetAllUsersHandler,
         UserSagas,
         AuthService,
