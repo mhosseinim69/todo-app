@@ -31,6 +31,7 @@ export class GetTodoItemByIdHandler implements IQueryHandler<GetTodoItemByIdQuer
     }
 }
 
+
 @QueryHandler(GetAllTodoItemsQuery)
 export class GetAllTodoItemsHandler implements IQueryHandler<GetAllTodoItemsQuery> {
     constructor(
