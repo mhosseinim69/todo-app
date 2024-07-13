@@ -9,8 +9,7 @@ import { UserSagas } from './application/sagas/user.saga';
 import { TodoListSagas } from './application/sagas/todo-list.saga';
 import { TodoItemSagas } from './application/sagas/todo-item.saga';
 import { AuthModule } from './modules/authentication/auth.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 import { JwtConfigService } from './application/authentication/jwt-config.service';
 import { WinstonLogger } from './application/logger/winston-logger.service';
 
@@ -24,14 +23,6 @@ import { WinstonLogger } from './application/logger/winston-logger.service';
     TodoListModule,
     TodoItemModule,
     AuthModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>(process.env.JWT_SECRET),
-        signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
-      }),
-      inject: [ConfigService],
-    }),
   ],
   providers: [UserSagas, TodoListSagas, TodoItemSagas, JwtConfigService, WinstonLogger],
   exports: [JwtConfigService],

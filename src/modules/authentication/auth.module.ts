@@ -24,6 +24,6 @@ import { JwtConfigService } from '../../application/authentication/jwt-config.se
         }),
     ],
     providers: [AuthService, JwtStrategy, UserService, CommandBus, QueryBus, JwtConfigService],
-    exports: [AuthService],
+    exports: [AuthService, JwtModule],
 })
 export class AuthModule { }
